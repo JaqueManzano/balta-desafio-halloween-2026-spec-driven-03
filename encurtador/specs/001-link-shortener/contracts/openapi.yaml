@@ -1,0 +1,283 @@
+openapi: 3.0.3
+info:
+  title: Shortener API
+  version: 1.0.0
+  description: API de contas, links curtos e consulta de acessos.
+servers:
+  - url: http://localhost:5000
+paths:
+  /api/accounts:
+    post:
+      summary: Criar conta
+      operationId: registerAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountCredentials"
+      responses:
+        "201":
+          description: Conta criada.
+        "400":
+          $ref: "#/components/responses/ValidationProblem"
+        "409":
+          description: Cadastro recusado com resposta genérica que não revela se o e-mail já existe.
+  /api/accounts/login:
+    post:
+      summary: Entrar e obter token Bearer
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountCredentials"
+      responses:
+        "200":
+          description: Autenticação concluída.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          $ref: "#/components/responses/ValidationProblem"
+        "401":
+          description: Credenciais inválidas; não revela se e-mail ou senha falhou.
+  /api/accounts/refresh:
+    post:
+      summary: Renovar tokens de autenticação
+      operationId: refreshTokens
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+      responses:
+        "200":
+          description: Tokens renovados.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "401":
+          description: Refresh token inválido ou expirado.
+  /api/accounts/logout:
+    post:
+      summary: Encerrar sessão descartando tokens no cliente
+      operationId: logout
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Cliente descarta access e refresh tokens; access tokens emitidos não são revogados antecipadamente.
+        "401":
+          description: Não autenticado.
+  /api/links:
+    post:
+      summary: Criar link curto
+      operationId: createLink
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateLinkRequest"
+      responses:
+        "201":
+          description: Link criado.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedLink"
+        "400":
+          $ref: "#/components/responses/ValidationProblem"
+        "401":
+          description: Não autenticado.
+        "409":
+          description: Código personalizado já indisponível.
+    get:
+      summary: Listar links próprios
+      operationId: listOwnLinks
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Links pertencentes à conta autenticada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LinkSummary"
+        "401":
+          description: Não autenticado.
+  /api/links/{code}/stats:
+    get:
+      summary: Consultar dados e contagem de link próprio
+      operationId: getOwnLinkStats
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/Code"
+      responses:
+        "200":
+          description: Dados do link pertencente à conta autenticada.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LinkSummary"
+        "401":
+          description: Não autenticado.
+        "404":
+          description: Link inexistente ou não pertencente à conta autenticada.
+  /{code}:
+    get:
+      summary: Redirecionar para o destino de um link ativo
+      operationId: redirect
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/Code"
+      responses:
+        "302":
+          description: Redirecionamento bem-sucedido; contador incrementado uma vez.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+        "404":
+          description: Código inexistente.
+        "410":
+          description: Link expirado.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Identity bearer token
+  parameters:
+    Code:
+      name: code
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 4
+        maxLength: 20
+        pattern: "^[A-Za-z0-9]+$"
+  schemas:
+    AccountCredentials:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+    TokenResponse:
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        expiresIn:
+          type: integer
+          description: Duração em segundos, se retornada pelo provedor.
+        tokenType:
+          type: string
+          enum:
+            - Bearer
+    RefreshRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
+    CreateLinkRequest:
+      type: object
+      required:
+        - targetUrl
+      properties:
+        targetUrl:
+          type: string
+          format: uri
+          description: URL absoluta com esquema HTTP ou HTTPS.
+        code:
+          type: string
+          minLength: 4
+          maxLength: 20
+          pattern: "^[A-Za-z0-9]+$"
+          description: Opcional; se ausente, gerar código alfanumérico de 7 caracteres.
+        expiresAtUtc:
+          type: string
+          format: date-time
+          description: Opcional; se ausente, expira 30 dias após a criação.
+    CreatedLink:
+      allOf:
+        - $ref: "#/components/schemas/LinkSummary"
+    LinkSummary:
+      type: object
+      required:
+        - code
+        - shortUrl
+        - targetUrl
+        - createdAtUtc
+        - expiresAtUtc
+        - accessCount
+      properties:
+        code:
+          type: string
+        shortUrl:
+          type: string
+          format: uri
+        targetUrl:
+          type: string
+          format: uri
+        createdAtUtc:
+          type: string
+          format: date-time
+        expiresAtUtc:
+          type: string
+          format: date-time
+        accessCount:
+          type: integer
+          format: int64
+    ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+          description: Mensagem em português.
+        status:
+          type: integer
+        detail:
+          type: string
+          description: Mensagem em português.
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+  responses:
+    ValidationProblem:
+      description: Entrada inválida, sem persistir recursos.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
