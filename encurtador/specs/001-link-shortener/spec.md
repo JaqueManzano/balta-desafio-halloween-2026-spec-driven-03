@@ -8,6 +8,14 @@
 
 **Input**: User description: "Um encurtador de links. Permitir transformar uma URL longa em um link curto, compartilhar esse link e acompanhar quantos acessos recebeu, com autenticação de usuários."
 
+## Clarifications
+
+### Session 2026-10-22
+
+- Q: A primeira versão deve verificar os endereços de e-mail e permitir que as pessoas redefinam senhas esquecidas por e-mail? → A: Não; incluir apenas cadastro, entrada e saída, sem verificação de e-mail ou redefinição de senha.
+- Q: Por quanto tempo um link deve permanecer ativo quando a pessoa não informa uma data de expiração? → A: 30 dias.
+- Q: Qual deve ser o tamanho mínimo de uma senha para criar uma conta? → A: 8 caracteres.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Criar e compartilhar um link curto (Priority: P1)
@@ -55,6 +63,7 @@ Uma pessoa autenticada consulta os links que criou e o total de acessos de cada 
 3. **Given** um link criado por outra pessoa, **When** uma pessoa autenticada tenta consultar sua contagem, **Then** o acesso aos dados é negado.
 4. **Given** uma pessoa autenticada e uma data e hora futuras, **When** ela cria um link com essa expiração, **Then** o link redireciona antes do instante definido e é considerado expirado a partir desse instante.
 5. **Given** uma pessoa autenticada e uma expiração igual ou anterior ao instante atual, **When** ela tenta criar o link, **Then** a criação é recusada com indicação clara do erro.
+6. **Given** uma pessoa autenticada que não informa uma expiração, **When** cria um link, **Then** o link recebe expiração 30 dias após sua criação.
 
 ### User Story 4 - Acessar a conta (Priority: P1)
 
@@ -70,6 +79,7 @@ Uma pessoa pode criar uma conta e entrar com suas credenciais para criar links e
 2. **Given** uma conta existente, **When** a pessoa fornece credenciais válidas, **Then** entra e pode gerenciar seus links.
 3. **Given** credenciais incorretas, **When** a pessoa tenta entrar, **Then** o acesso é recusado sem revelar se a conta ou a senha estava incorreta.
 4. **Given** uma pessoa não autenticada, **When** tenta criar um link ou consultar estatísticas, **Then** o sistema solicita autenticação ou nega o acesso.
+5. **Given** uma pessoa que informa uma senha com menos de 8 caracteres no cadastro, **When** tenta criar uma conta, **Then** o cadastro é recusado com indicação clara do erro.
 
 ### Edge Cases
 
@@ -77,6 +87,7 @@ Uma pessoa pode criar uma conta e entrar com suas credenciais para criar links e
 - Dois pedidos simultâneos com o mesmo código personalizado devem resultar em no máximo um link criado com esse código; os demais devem receber aviso de indisponibilidade.
 - Se a geração automática produzir um código já utilizado, o sistema deve gerar outro código antes de concluir a criação.
 - O instante de expiração é exclusivo: um link deixa de redirecionar quando o instante atual é igual ou posterior à expiração.
+- Um link criado sem expiração informada recebe prazo padrão de 30 dias a partir de sua criação.
 - Falhas ao salvar um link não devem devolver um link curto como se a criação tivesse sido concluída.
 - A contagem deve incluir cada requisição que resulte em redirecionamento bem-sucedido, inclusive visitas repetidas pela mesma pessoa; acessos a códigos inexistentes ou expirados não contam.
 - Encerrar e reiniciar a aplicação não deve remover contas, links ou contagens já registrados.
@@ -85,7 +96,7 @@ Uma pessoa pode criar uma conta e entrar com suas credenciais para criar links e
 
 ### Functional Requirements
 
-- **FR-001**: O sistema MUST permitir que uma pessoa crie uma conta e entre com credenciais válidas.
+- **FR-001**: O sistema MUST permitir que uma pessoa crie uma conta com senha de pelo menos 8 caracteres, entre e saia usando credenciais válidas.
 - **FR-002**: O sistema MUST exigir autenticação para criar links e consultar estatísticas ou dados de gerenciamento.
 - **FR-003**: O sistema MUST aceitar uma URL de destino HTTP ou HTTPS válida e recusar valores inválidos ou esquemas diferentes.
 - **FR-004**: O sistema MUST gerar automaticamente, quando nenhum código for informado, um código alfanumérico de exatamente 7 caracteres.
@@ -93,7 +104,7 @@ Uma pessoa pode criar uma conta e entrar com suas credenciais para criar links e
 - **FR-006**: O sistema MUST garantir que cada código identifica no máximo um link; códigos personalizados duplicados devem ser recusados e códigos automáticos em conflito devem ser gerados novamente.
 - **FR-007**: O sistema MUST devolver o link curto correspondente após a criação bem-sucedida.
 - **FR-008**: O sistema MUST redirecionar qualquer visitante de um link ativo à URL de destino, sem exigir autenticação para o redirecionamento.
-- **FR-009**: O sistema MUST permitir que o criador informe uma data e hora de expiração futura para o link e recusar uma data e hora igual ou anterior ao instante atual.
+- **FR-009**: O sistema MUST permitir que o criador informe uma data e hora de expiração futura para o link, usar 30 dias após a criação quando nenhuma expiração for informada e recusar uma data e hora igual ou anterior ao instante atual.
 - **FR-010**: O sistema MUST recusar o redirecionamento de links expirados ou inexistentes e apresentar uma resposta apropriada.
 - **FR-011**: O sistema MUST incrementar em uma unidade a contagem de acessos a cada requisição que resulte em redirecionamento bem-sucedido.
 - **FR-012**: O sistema MUST permitir que uma pessoa autenticada consulte o total de acessos e os dados dos links que criou, sem permitir consulta dos links de outra pessoa.
@@ -122,8 +133,9 @@ Uma pessoa pode criar uma conta e entrar com suas credenciais para criar links e
 
 - O público inclui pessoas criadoras autenticadas e visitantes que recebem links compartilhados; visitantes não precisam de conta para redirecionamentos.
 - O cadastro e o login usam e-mail e senha, e mensagens de autenticação não revelam se um e-mail está cadastrado.
+- A autenticação da primeira versão limita-se ao cadastro, entrada e saída; não inclui verificação de e-mail nem redefinição de senha.
 - Códigos personalizados aceitam apenas letras e números; códigos não diferenciam maiúsculas de minúsculas para fins de unicidade.
 - Datas e horas de expiração são interpretadas e comparadas em UTC. Um link é válido antes do instante definido e expirado a partir dele.
 - Cada requisição bem-sucedida de redirecionamento conta como um acesso, sem deduplicação por pessoa, dispositivo ou intervalo de tempo.
-- Links, contas e contagens são mantidos sem prazo de retenção definido nesta versão.
+- Links, contas e contagens são mantidos sem prazo de retenção definido nesta versão; links sem expiração informada deixam de redirecionar após 30 dias.
 - A primeira versão não inclui edição do destino, exclusão de links, estatísticas detalhadas por período ou proteção contra uso malicioso além da validação de entradas descrita.
