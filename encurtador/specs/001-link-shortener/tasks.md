@@ -23,7 +23,7 @@ description: "Tarefas de implementação do encurtador de links"
 
 **Purpose**: Criar a solução .NET 9 e os projetos da API e dos testes conforme `plan.md`.
 
-- [ ] T001 Criar `Shortener.sln`, `src/Shortener.Api/Shortener.Api.csproj`, `tests/Shortener.UnitTests/Shortener.UnitTests.csproj` e `tests/Shortener.IntegrationTests/Shortener.IntegrationTests.csproj`; definir `net9.0`, referências entre projetos, EF Core SQLite e Identity EF Core na API, e xUnit, `Microsoft.NET.Test.Sdk` e `Microsoft.AspNetCore.Mvc.Testing` nos projetos de teste.
+- [ ] T001 Criar obrigatoriamente o arquivo de solução `Shortener.sln` na raiz do repositório e adicionar nele os projetos `src/Shortener.Api/Shortener.Api.csproj`, `tests/Shortener.UnitTests/Shortener.UnitTests.csproj` e `tests/Shortener.IntegrationTests/Shortener.IntegrationTests.csproj`; definir `net9.0`, referências entre projetos, EF Core SQLite e Identity EF Core na API, e xUnit, `Microsoft.NET.Test.Sdk` e `Microsoft.AspNetCore.Mvc.Testing` nos projetos de teste.
 - [ ] T002 Criar o arquivo `.gitignore` na raiz do repositório para ignorar artefatos gerados pelo .NET, arquivos de build (`bin/`, `obj/`), bancos SQLite locais e arquivos de configuração local que não devem ser versionados.
 - [ ] T003 Adicionar `Swashbuckle.AspNetCore` em `src/Shortener.Api/Shortener.Api.csproj` e configurar a geração do documento OpenAPI e a interface Swagger UI em `src/Shortener.Api/Program.cs`, habilitando a interface no ambiente de desenvolvimento.
 
