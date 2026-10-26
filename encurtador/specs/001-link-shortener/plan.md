@@ -9,11 +9,11 @@ Implementar uma API HTTP para cadastro e autenticação por e-mail e senha, cria
 ## Contexto Técnico
 
 **Linguagem/Versão**: C# / .NET 9, conforme a constituição  
-**Dependências principais**: ASP.NET Core Minimal APIs e Identity; Entity Framework Core SQLite; xUnit  
+**Dependências principais**: ASP.NET Core Minimal APIs e Identity; Entity Framework Core SQLite; xUnit; `Swashbuckle.AspNetCore`  
 **Armazenamento**: SQLite persistido em arquivo  
 **Testes**: xUnit; testes unitários das regras e testes de integração HTTP com SQLite  
 **Plataforma alvo**: Serviço HTTP compatível com .NET 9  
-**Tipo de projeto**: API web  
+**Tipo de projeto**: API web, sem interface de usuário de produto; Swagger UI é documentação interativa para desenvolvimento  
 **Metas de desempenho**: Não especificadas na funcionalidade; validar correção do incremento concorrente, sem assumir meta de latência ou throughput.  
 **Restrições**: Endpoints não acessam persistência diretamente; regras de negócio ficam em serviços; erros de validação usam HTTP 400 e ProblemDetails em português; alterações de esquema devem preservar os dados. O cliente envia tokens Bearer por conta; não se usa chave compartilhada de gerenciamento.  
 **Escala/escopo**: Primeira versão com contas, links e contagem total; sem analytics por visita, edição/exclusão de links ou política de retenção/limpeza. Não há volume de carga especificado.
@@ -30,7 +30,7 @@ Implementar uma API HTTP para cadastro e autenticação por e-mail e senha, cria
 | .NET 9, C# e Minimal APIs | PASS | Plataforma e modelo HTTP definidos pelo plano. |
 | SQLite via Entity Framework Core | PASS | Persistência definida e usada pelos repositórios. |
 | xUnit | PASS | Framework de testes definido. |
-| Dependências novas justificadas | PASS | EF Core SQLite e Identity fornecem persistência relacional e armazenamento/verificação seguros de senhas, necessários aos requisitos; versões e pacotes exatos serão definidos na implementação .NET 9. |
+| Dependências novas justificadas | PASS | EF Core SQLite e Identity fornecem persistência relacional e armazenamento/verificação seguros de senhas; `Swashbuckle.AspNetCore` gera o documento OpenAPI e a Swagger UI de desenvolvimento para inspecionar e validar manualmente os contratos HTTP. As dependências atendem aos requisitos e seus pacotes/versões serão definidos na implementação .NET 9. |
 
 **Gate pré-pesquisa**: PASS. Não há conflito com a constituição.
 
@@ -73,7 +73,8 @@ tests/
 ## Decisões de Arquitetura
 
 - A autenticação será por conta e token Bearer do ASP.NET Core Identity; serão mapeados somente handlers próprios de cadastro, entrada, renovação e saída, sem mapear o conjunto inteiro de endpoints Identity. O identificador autenticado será usado para filtrar operações de gerenciamento por proprietário. A chave de gerenciamento sugerida no rascunho foi descartada por não atender à autorização por proprietário exigida pela especificação.
-- Identity fornece armazenamento e verificação de senhas; a política de senha será configurada para exigir no mínimo 8 caracteres sem impor requisitos de composição adicionais não especificados. Somente os fluxos de cadastro, entrada e saída serão expostos; verificação de e-mail e recuperação de senha permanecem fora do escopo.
+- Identity fornece armazenamento e verificação de senhas; a política de senha será configurada para exigir no mínimo 8 caracteres sem impor requisitos de composição adicionais não especificados. Serão expostos os fluxos de cadastro, entrada, renovação de tokens e saída; verificação de e-mail e recuperação de senha permanecem fora do escopo.
+- `Swashbuckle.AspNetCore` será usado para gerar o documento OpenAPI e disponibilizar Swagger UI somente em desenvolvimento, facilitando inspeção manual e validação dos contratos HTTP. Isso não constitui uma interface de usuário do produto.
 - Um código canônico em maiúsculas preserva a unicidade sem diferenciar maiúsculas/minúsculas. Índice único no SQLite é a garantia final; checagem antecipada serve apenas para feedback. Colisões de código gerado tentam novamente; colisões de código escolhido retornam conflito.
 - Código gerado terá 7 caracteres alfanuméricos usando alfabeto que evita caracteres visualmente ambíguos. A geração usará aleatoriedade criptograficamente segura.
 - Link sem expiração solicitada recebe `CreatedAtUtc + 30 dias`. Datas persistidas e comparações usam UTC; o instante final é exclusivo.

@@ -25,7 +25,7 @@ description: "Tarefas de implementação do encurtador de links"
 
 - [ ] T001 Criar obrigatoriamente o arquivo de solução `Shortener.sln` na raiz do repositório e adicionar nele os projetos `src/Shortener.Api/Shortener.Api.csproj`, `tests/Shortener.UnitTests/Shortener.UnitTests.csproj` e `tests/Shortener.IntegrationTests/Shortener.IntegrationTests.csproj`; definir `net9.0`, referências entre projetos, EF Core SQLite e Identity EF Core na API, e xUnit, `Microsoft.NET.Test.Sdk` e `Microsoft.AspNetCore.Mvc.Testing` nos projetos de teste.
 - [ ] T002 Criar o arquivo `.gitignore` na raiz do repositório para ignorar artefatos gerados pelo .NET, arquivos de build (`bin/`, `obj/`), bancos SQLite locais e arquivos de configuração local que não devem ser versionados.
-- [ ] T003 Adicionar `Swashbuckle.AspNetCore` em `src/Shortener.Api/Shortener.Api.csproj` e configurar a geração do documento OpenAPI e a interface Swagger UI em `src/Shortener.Api/Program.cs`, habilitando a interface no ambiente de desenvolvimento.
+- [ ] T003 Adicionar `Swashbuckle.AspNetCore` em `src/Shortener.Api/Shortener.Api.csproj` e configurar a geração do documento OpenAPI e a interface Swagger UI em `src/Shortener.Api/Program.cs`, habilitando a interface somente no ambiente de desenvolvimento como ferramenta de documentação da API, não como interface de produto.
 
 ---
 
@@ -132,7 +132,7 @@ description: "Tarefas de implementação do encurtador de links"
 
 - [ ] T028 [P] Atualizar os exemplos de inicialização, migração, autenticação e cenários HTTP para os caminhos e contratos implementados em `specs/001-link-shortener/quickstart.md`.
 - [ ] T029 [P] Conferir e alinhar os esquemas, códigos de resposta e descrições de todos os endpoints implementados em `specs/001-link-shortener/contracts/openapi.yaml`.
-- [ ] T030 Executar `dotnet restore`, `dotnet build` e `dotnet test` para `Shortener.sln` e validar os cenários de concorrência, reinicialização e contratos descritos em `specs/001-link-shortener/quickstart.md`.
+- [ ] T030 Executar `dotnet restore`, `dotnet build` e `dotnet test` para `Shortener.sln`; em `tests/Shortener.IntegrationTests/PersistenceTests.cs`, automatizar um teste que crie conta e link com expiração definida, registre acessos, encerre o host da API e o reinicie usando o mesmo arquivo SQLite, então confirme que a conta, o link, a expiração e a contagem persistiram; validar também concorrência e contratos descritos em `specs/001-link-shortener/quickstart.md`.
 
 ---
 

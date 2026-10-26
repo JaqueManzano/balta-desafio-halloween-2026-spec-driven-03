@@ -60,6 +60,8 @@ dotnet test
 
 Os testes unitários devem validar regras do serviço; os testes de integração devem exercitar os endpoints e o provedor SQLite real, incluindo unicidade e incremento concorrente. Consulte [data-model.md](./data-model.md) para restrições persistidas e [contracts/openapi.yaml](./contracts/openapi.yaml) para formatos HTTP.
 
+O teste de integração de persistência deve usar um arquivo SQLite, criar uma conta e um link com expiração definida, registrar pelo menos um redirecionamento bem-sucedido, encerrar o host e iniciá-lo novamente apontando para o mesmo arquivo. Após a reinicialização, deve confirmar que a conta e o link continuam disponíveis e que a expiração e a contagem de acessos mantêm os valores anteriores.
+
 Para sair, descartar access e refresh tokens no cliente. Essa operação não revoga no servidor access tokens já emitidos; eles permanecem válidos até vencerem.
 
 Antes de sair, validar `POST /api/accounts/refresh` com o refresh token e confirmar que a resposta contém novas credenciais. O endpoint de saída e o de renovação também devem ter testes de integração do caminho feliz.

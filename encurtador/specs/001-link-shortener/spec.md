@@ -16,6 +16,11 @@
 - Q: Por quanto tempo um link deve permanecer ativo quando a pessoa não informa uma data de expiração? → A: 30 dias.
 - Q: Qual deve ser o tamanho mínimo de uma senha para criar uma conta? → A: 8 caracteres.
 
+### Session 2026-10-26
+
+- Q: A autenticação inclui renovação de tokens? → A: Sim; além de cadastro, entrada e saída, a API oferece renovação de tokens usando refresh token.
+- Q: A primeira versão inclui interface de usuário? → A: Não; o produto consiste somente em uma API HTTP. Swagger UI é documentação interativa para desenvolvimento, não uma interface de produto.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Criar e compartilhar um link curto (Priority: P1)
@@ -96,7 +101,7 @@ Uma pessoa pode criar uma conta e entrar com suas credenciais para criar links e
 
 ### Functional Requirements
 
-- **FR-001**: O sistema MUST permitir que uma pessoa crie uma conta com senha de pelo menos 8 caracteres, entre e saia usando credenciais válidas.
+- **FR-001**: O sistema MUST permitir que uma pessoa crie uma conta com senha de pelo menos 8 caracteres, entre com credenciais válidas, renove os tokens de autenticação usando um refresh token válido e saia.
 - **FR-002**: O sistema MUST exigir autenticação para criar links e consultar estatísticas ou dados de gerenciamento.
 - **FR-003**: O sistema MUST aceitar uma URL de destino HTTP ou HTTPS válida e recusar valores inválidos ou esquemas diferentes.
 - **FR-004**: O sistema MUST gerar automaticamente, quando nenhum código for informado, um código alfanumérico de exatamente 7 caracteres.
@@ -115,7 +120,7 @@ Uma pessoa pode criar uma conta e entrar com suas credenciais para criar links e
 
 - **Pessoa usuária**: Conta que autentica uma pessoa e identifica quais links ela criou.
 - **Link curto**: Associação entre um código único, uma URL de destino e a pessoa criadora; pode ter expiração e registra sua contagem de acessos.
-- **Acesso**: Requisição bem-sucedida a um link ativo que resulta em redirecionamento e incrementa a contagem daquele link.
+- **Acesso**: Evento conceitual correspondente a uma requisição bem-sucedida a um link ativo que resulta em redirecionamento e incrementa sua contagem. Não é armazenado como entidade ou registro individual; somente a contagem agregada é persistida em Link.
 
 ## Success Criteria *(mandatory)*
 
@@ -126,14 +131,15 @@ Uma pessoa pode criar uma conta e entrar com suas credenciais para criar links e
 - **SC-003**: Em testes de contagem, cada redirecionamento bem-sucedido aumenta o total exatamente em uma unidade; acessos sem redirecionamento bem-sucedido não alteram o total.
 - **SC-004**: Em testes de autorização, 100% das tentativas de consultar ou gerenciar links de outra pessoa são negadas.
 - **SC-005**: Após reiniciar a aplicação em um teste, 100% das contas, links e contagens previamente confirmados continuam disponíveis.
-- **SC-006**: Pelo menos 90% das pessoas em um teste de usabilidade conseguem criar e copiar um link curto válido em até 2 minutos, sem ajuda.
-- **SC-007**: Pelo menos 90% das pessoas em um teste de usabilidade conseguem identificar o total de acessos de um link próprio em até 1 minuto.
+- **SC-006**: Todos os endpoints definidos no contrato OpenAPI podem ser chamados por HTTP sem interface de usuário dedicada e retornam os status e formatos de resposta especificados.
+- **SC-007**: A documentação OpenAPI gerada no ambiente de desenvolvimento descreve todos os endpoints implementados e seus formatos de requisição e resposta.
 
 ## Assumptions
 
 - O público inclui pessoas criadoras autenticadas e visitantes que recebem links compartilhados; visitantes não precisam de conta para redirecionamentos.
 - O cadastro e o login usam e-mail e senha, e mensagens de autenticação não revelam se um e-mail está cadastrado.
-- A autenticação da primeira versão limita-se ao cadastro, entrada e saída; não inclui verificação de e-mail nem redefinição de senha.
+- A autenticação da primeira versão inclui cadastro, entrada, renovação de tokens e saída; não inclui verificação de e-mail nem redefinição de senha.
+- O produto é somente uma API HTTP, sem interface de usuário dedicada. Swagger UI é ferramenta de documentação e exploração da API no ambiente de desenvolvimento.
 - Códigos personalizados aceitam apenas letras e números; códigos não diferenciam maiúsculas de minúsculas para fins de unicidade.
 - Datas e horas de expiração são interpretadas e comparadas em UTC. Um link é válido antes do instante definido e expirado a partir dele.
 - Cada requisição bem-sucedida de redirecionamento conta como um acesso, sem deduplicação por pessoa, dispositivo ou intervalo de tempo.
