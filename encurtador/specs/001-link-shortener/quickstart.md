@@ -8,18 +8,17 @@
 
 ## Inicialização
 
-Na raiz da solução, restaurar e compilar:
+Na raiz do repositório (onde está `Shortener.sln`), restaurar e compilar:
 
 ```powershell
 dotnet restore
 dotnet build
 ```
 
-Aplicar as migrações no arquivo SQLite configurado e iniciar a API:
+Iniciar a API; ela aplica as migrações pendentes no arquivo SQLite configurado:
 
 ```powershell
-dotnet ef database update --project src/Shortener.Api
-dotnet run --project src/Shortener.Api
+dotnet run --project encurtador/src/Shortener.Api
 ```
 
 Usar a URL local informada pela aplicação como `BASE_URL`. Os nomes e caminhos de solução/projeto podem ser ajustados quando a estrutura executável for criada.
@@ -55,7 +54,7 @@ Os exemplos abaixo são sequenciais; substitua `BASE_URL`, `TOKEN` e valores JSO
 Executar todos os testes:
 
 ```powershell
-dotnet test
+dotnet test Shortener.sln
 ```
 
 Os testes unitários devem validar regras do serviço; os testes de integração devem exercitar os endpoints e o provedor SQLite real, incluindo unicidade e incremento concorrente. Consulte [data-model.md](./data-model.md) para restrições persistidas e [contracts/openapi.yaml](./contracts/openapi.yaml) para formatos HTTP.

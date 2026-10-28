@@ -52,23 +52,23 @@ specs/001-link-shortener/
 
 ```text
 src/
-└── Shortener.Api/
-    ├── Endpoints/
-    │   ├── AccountEndpoints.cs
-    │   ├── LinkEndpoints.cs
-    │   └── RedirectEndpoints.cs
-    ├── Application/
-    │   └── LinkService.cs
-    ├── Data/
-    │   ├── AppDbContext.cs
-    │   └── Repositories/
-    │       └── LinkRepository.cs
+├── Shortener.Api/
+│   ├── Endpoints/
+│   │   ├── AccountEndpoints.cs
+│   │   ├── LinkEndpoints.cs
+│   │   └── RedirectEndpoints.cs
+│   ├── Application/
+│   │   └── LinkService.cs
+│   └── Data/
+│       ├── AppDbContext.cs
+│       └── Repositories/
+│           └── LinkRepository.cs
 tests/
 ├── Shortener.UnitTests/
 └── Shortener.IntegrationTests/
 ```
 
-**Decisão de estrutura**: Uma API hospedada em `src/Shortener.Api`, com endpoints agrupados por recurso, camada de aplicação e acesso a dados separado. Identity gerencia a entidade e as credenciais das contas; o agregado Link usa repositório. Testes unitários e de integração ficam em projetos distintos. O repositório atual contém os artefatos Spec Kit, sem solução ou código de aplicação ainda.
+**Decisão de estrutura**: A solução `Shortener.sln` fica na raiz do repositório. O código de produção da API está em `src/Shortener.Api`; os projetos de teste ficam em `tests/`, separados do código de produção e referenciando a API. Endpoints são agrupados por recurso, com camada de aplicação e acesso a dados separados. Identity gerencia a entidade e as credenciais das contas; o agregado Link usa repositório.
 
 ## Decisões de Arquitetura
 
